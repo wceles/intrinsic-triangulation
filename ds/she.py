@@ -26,7 +26,7 @@ class IntrinsicMesh:
     self.T = copy.deepcopy(HE.T)  # one halfedge index associated to the triangle: he
     self.H = copy.deepcopy(HE.H)  # vertex, edge, triangle, and next halfedge associated to halfedge: [v,e,t,he]
     self.L = []  # edge length: l
-    self.S = []  # supporting he associated to extrinsic triangle: [he]
+    self.S = []  # supporting he associated to extrinsic triangle: [h]
     self.A = []  # supporting he angle associated to extrinsic triangle: [phi]
 
     # compute edge lengths
@@ -1257,7 +1257,7 @@ class IntrinsicMesh:
 
   # return sparse Diffusion matrix in lil format
   # M = (I - gamma h L), assuming gamma = 1
-  def DiffusionMatrix (self, t):
+  def DiffusionMatrix (self, t=1):
     n = len(self.V)
     mat = scipy.sparse.lil_matrix((n,n),dtype='float64')
     for i in range(0,len(self.V)):
@@ -1286,20 +1286,6 @@ class IntrinsicMesh:
       A[i,i] = 1
       b[i] = T
     return scipy.sparse.linalg.spsolve(A.tocsr(),b)
-
-  # geodesics: the Varadhan method from Dirac delta
-  def Varadhan (self, vi):
-    t = self.l_max() ** 2
-    Ti = {}
-    Ti[vi] = 1
-    u = self.HeatDiffusion(Ti,t)
-    print("u:",np.min(u),np.max(u))
-    for i in range(len(u)):
-      if u[i] <= 0:
-        u[i] = 0
-      else:
-        u[i] = -math.log(u[i]) * math.sqrt(t) / 2
-    return u
 
   # solve the poisson equation, where b is the independent vector value
   # c is the boundary condition: a dictionary with key=vertex_index and value=pre-defined_value

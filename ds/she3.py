@@ -17,7 +17,9 @@ from .theap import THeap
 L_MIN = 1e-10
 
 class IntrinsicMesh:
-  '''Halfedge data structure for intrinsic triangulations'''
+  '''Supporting Halfedge Data Structure for intrinsic triangulations'''
+
+  # create a intrinsic triangulation based on the extrinsic one provided
   def __init__ (self, HE, mollification_factor=None):
     self.HE = HE # supporting extrinsic mesh
     self.V = copy.deepcopy(HE.V)  # one halfedge index associated to vertex: he
@@ -179,10 +181,7 @@ class IntrinsicMesh:
 
   # compute average value of edge length
   def l_average (self):
-    total = 0
-    for l in self.L:
-      total += l
-    return l/len(self.L) 
+    return sum(self.L) / len(self.L)
   
   # compute maximum value of edge length
   def l_max (self):
@@ -1278,7 +1277,8 @@ class IntrinsicMesh:
       L[v2,v2] += m[2][2]
     return L
 
-  # compute diffusion matrix: M = (I - t L)
+  # return sparse Diffusion matrix in lil format
+  # M = (I - gamma h L), assuming gamma = 1
   def DiffusionMatrix (self, t=1):
     M = self.LaplacianMatrix()
     row, col = M.nonzero()
@@ -1290,13 +1290,15 @@ class IntrinsicMesh:
       M[v,v] = Mii + M[v,v]
     return M
 
-  # solve the heat diffusion
+  # simulate heat diffusion
+  # Ti is a dictionary (v, T) represent initial temperatures at vertices
   def HeatDiffusion (self, Ti, t=1):
     A = self.DiffusionMatrix(t)
     b = np.zeros(len(self.V),dtype="float64")
     for i, T in Ti.items():
       col = A[:,i].toarray()[:,0]
       b -= col * T
+    for i, T in Ti.items():
       A[:,i] = 0
       A[i,:] = 0
       A[i,i] = 1
