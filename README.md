@@ -42,8 +42,8 @@ pip install glfw PyOpenGL potpourri3d numpy scipy
 
 The example applications demonstrate the usage of SHE and SHE3. Pass a mesh filename as an argument to run the interactive visualizations:
 ```bash
-python main.py data/pegaus.obj
-python main3.py data/rocketship.ply
+python main.py data/rocketship.ply
+python main3.py data/pegaus.obj
 ```
 
 
